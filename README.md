@@ -1,6 +1,6 @@
-# Tech Trailblazer Academy Dashboard
+# Office SaaS - Offline Management System
 
-A comprehensive admin dashboard for managing student registrations, payment verification, email communications, and scholarship applications for the Tech Trailblazer Academy program.
+A comprehensive offline office management dashboard for handling student registrations, payment verification, email communications, and administrative tasks. This system operates entirely offline with no external dependencies.
 
 ## Features
 
@@ -39,7 +39,7 @@ A comprehensive admin dashboard for managing student registrations, payment veri
 - **Form Validation**: Required field validation and error handling
 
 ### Authentication
-- **Supabase Integration**: Secure authentication using Supabase
+- **Offline Authentication**: Secure authentication using local storage
 - **Admin Login**: Protected admin routes with email/password authentication
 - **Session Management**: Automatic session handling
 
@@ -55,18 +55,17 @@ A comprehensive admin dashboard for managing student registrations, payment veri
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS 4
-- **Authentication**: Supabase
-- **Email**: Resend
-- **File Storage**: Cloudinary
+- **Database**: Local JSON file storage (offline)
+- **File Storage**: Local file system (offline)
 - **State Management**: React Context API
 - **Icons**: Lucide React
 
 ## Installation
 
-1. **Clone the repository**
+1. **Clone repository**
    ```bash
-   git clone https://github.com/enoch-systems/dashboard-tt.git
-   cd dashboard-tt
+   git clone https://github.com/enoch-systems/office-saas.git
+   cd office-saas
    ```
 
 2. **Install dependencies**
@@ -74,35 +73,18 @@ A comprehensive admin dashboard for managing student registrations, payment veri
    npm install
    ```
 
-3. **Set up environment variables**
-   Create a `.env.local` file in the root directory:
-   ```env
-   # Supabase Configuration
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-   # Resend API Key (for email functionality)
-   RESEND_API_KEY=your_resend_api_key
-
-   # Cloudinary Configuration (for image uploads)
-   CLOUDINARY_CLOUD_NAME=your_cloud_name
-   CLOUDINARY_API_KEY=your_api_key
-   CLOUDINARY_API_SECRET=your_api_secret
-   NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
-   ```
-
-4. **Run the development server**
+3. **Run development server**
    ```bash
    npm run dev
    ```
 
-5. **Open your browser**
+4. **Open your browser**
    Navigate to `http://localhost:3000`
 
 ## Available Routes
 
 ### Public Routes
-- `/register` - Scholarship registration form
+- `/register` - Registration form
 - `/paymentupload` - Payment proof upload form
 - `/authpage` - Admin login page
 
@@ -119,7 +101,7 @@ A comprehensive admin dashboard for managing student registrations, payment veri
 - `POST /api/auth/login` - Admin login
 
 ### Registration
-- `POST /api/register` - Submit scholarship registration
+- `POST /api/register` - Submit registration
 
 ### Payment
 - `POST /api/upload-payment` - Upload payment proof
@@ -147,25 +129,24 @@ A comprehensive admin dashboard for managing student registrations, payment veri
 - `RegistrationForm` - Comprehensive registration form
 
 ### Authentication
-- `AuthPage` - Login page with Supabase integration
+- `AuthPage` - Login page with offline authentication
 
-## Configuration
+## Contributing
 
-### Supabase Setup
-1. Create a Supabase project at https://supabase.com
-2. Enable email/password authentication in Auth settings
-3. Create an admin user in the Authentication > Users section
-4. Copy your project URL and anon key to `.env.local`
+1. Fork repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-### Email Setup (Resend)
-1. Create an account at https://resend.com
-2. Get your API key from the dashboard
-3. Add the API key to `.env.local`
+## License
 
-### Cloudinary Setup (Optional)
-1. Create an account at https://cloudinary.com
-2. Create an upload preset for unsigned uploads
-3. Add credentials to `.env.local`
+This project is proprietary software for Office SaaS Management.
+
+## Team
+
+- **Development**: Office SaaS Team
+- **Project**: Offline Management System
 
 ## Features Breakdown
 
@@ -190,7 +171,7 @@ All main pages (PaymentChecker, EmailPage, StudentDatabaseTable) include:
 ## Usage
 
 ### Admin Workflow
-1. **Login**: Access `/authpage` with your Supabase credentials
+1. **Login**: Access `/authpage` with your admin credentials
 2. **Review Payments**: Check `/email-portal/payment-checker` for new submissions
 3. **Send Emails**: Use `/email-portal` to communicate with students
 4. **Manage Students**: View and filter students in the student database
@@ -200,27 +181,56 @@ All main pages (PaymentChecker, EmailPage, StudentDatabaseTable) include:
 2. **Upload Payment**: Submit payment proof at `/paymentupload`
 3. **Wait for Verification**: Admin reviews and approves payments
 
-## Contributing
+## Offline Architecture
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### Database Storage
+- **JSON File Storage**: All data stored in local JSON files in `/data` directory
+- **Automatic Initialization**: Database files are created automatically on first run
+- **Data Persistence**: All changes are persisted to local files
 
-## License
+### File Storage
+- **Local Upload Directory**: Images and files stored in `/public/uploads`
+- **Organized Structure**: Separate folders for different file types
+- **Direct Access**: Files served directly from local storage
 
-This project is proprietary software for Tech Trailblazer Academy.
+### Authentication
+- **Local Session Management**: Sessions stored in browser localStorage
+- **Admin Credentials**: Configured through local authentication system
+- **No External Dependencies**: Complete offline operation
 
-## Team
+## Data Structure
 
-- **Development**: Tech Trailblazer Academy Team
-- **Project**: Dashboard Management System
+### Student Data
+Stored in `/data/students.json`:
+- Personal information (name, email, phone, etc.)
+- Registration details
+- Payment information
+- Course and learning track data
+
+### Payment Receipts
+Stored in `/data/payment-receipts.json`:
+- Payment submission details
+- Image file references
+- Status tracking
+- Review information
+
+### Email Follow-ups
+Stored in `/data/email-followups.json`:
+- Email communication history
+- Template usage tracking
+- Delivery status
 
 ## Support
 
-For support and questions, please contact the development team.
+For support and questions, please contact: development team.
 
 ---
 
+## Key Benefits of Offline Architecture
 
+- **No External Dependencies**: Complete independence from cloud services
+- **Data Privacy**: All data stored locally, full control over information
+- **Cost Effective**: No subscription fees for database or storage services
+- **Fast Performance**: Local data access without network latency
+- **Reliability**: No downtime due to external service issues
+- **Easy Deployment**: Simple setup without complex configurations
