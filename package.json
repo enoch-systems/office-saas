@@ -1,11 +1,21 @@
 {
-  "name": "free-nextjs-admin-dashboard",
-  "version": "2.3.0",
+  "name": "student-offline-database",
+  "version": "1.0.0",
   "private": true,
+  "description": "Offline student management database system",
+  "author": "Enoch Systems",
+  "main": "public/electron.js",
+  "homepage": "./",
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
+    "electron": "electron .",
+    "electron-dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron-build": "npm run build && electron-builder",
+    "electron-package": "npm run build && electron-builder --win portable",
+    "dist": "electron-builder",
+    "desktop": "npm run build && electron .",
     "lint": "eslint ."
   },
   "dependencies": {
@@ -19,8 +29,10 @@
     "@react-jvectormap/world": "^1.1.2",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/postcss": "^4.1.17",
+    "@types/better-sqlite3": "^7.6.13",
     "apexcharts": "^4.7.0",
     "autoprefixer": "^10.4.22",
+    "better-sqlite3": "^12.9.0",
     "dotenv": "^17.4.2",
     "flatpickr": "^4.6.13",
     "lucide-react": "^1.14.0",
@@ -31,8 +43,7 @@
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^19.2.0",
     "react-dropzone": "^14.3.8",
-    "resend": "^6.12.2",
-    "swiper": "^11.2.10",
+        "swiper": "^11.2.10",
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
@@ -42,11 +53,15 @@
     "@types/react": "^19.2.1",
     "@types/react-dom": "^19.2.1",
     "@types/react-transition-group": "^4.4.12",
+    "concurrently": "^9.2.1",
+    "electron": "^42.0.1",
+    "electron-builder": "^26.8.1",
     "eslint": "^9.39.1",
     "eslint-config-next": "16.0.7",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.17",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wait-on": "^9.0.10"
   },
   "overrides": {
     "@react-jvectormap/core": {
@@ -57,5 +72,48 @@
       "react": "^16.8.0 || ^17 || ^18 || ^19",
       "react-dom": "^16.8.0 || ^17 || ^18 || ^19"
     }
+  },
+  "build": {
+    "appId": "com.enochsystems.student-offline-database",
+    "productName": "Student Offline Database",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      ".next/**/*",
+      "node_modules/**/*",
+      "public/**/*",
+      "package.json",
+      "data/**/*",
+      "assets/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "data",
+        "to": "data",
+        "filter": ["**/*"]
+      }
+    ],
+    "asar": false,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Student Offline Database",
+      "installerIcon": "assets/icon.png",
+      "uninstallerIcon": "assets/icon.png",
+      "installerHeaderIcon": "assets/icon.png"
+    },
+    "npmRebuild": false
   }
 }

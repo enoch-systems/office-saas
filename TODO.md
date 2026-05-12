@@ -1,0 +1,6 @@
+- [ ] Update next.config.ts - enable static export (output: 'export') + disable image optimization
+- [ ] Rewrite electron.js - add comprehensive IPC handlers for all CRUD operations
+- [ ] Update preload.js - expose all CRUD methods to renderer process
+- [ ] Rewrite offline-db.ts - use Electron IPC when available, fallback to fetch for dev mode
+- [ ] Update package.json - add proper electron build scripts
+- [ ] Build and test the Electron desktop app

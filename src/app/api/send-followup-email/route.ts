@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Resend } from 'resend';
 import * as offlineDb from '@/lib/offline-db';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Mock Resend for offline mode
+const resend = {
+  emails: {
+    send: async (data: any) => {
+      console.log('Offline mode: Followup email would be sent:', data);
+      return { 
+        data: { id: `offline-${Date.now()}` }, 
+        error: null 
+      };
+    }
+  }
+};
 
 export async function POST(request: NextRequest) {
   try {

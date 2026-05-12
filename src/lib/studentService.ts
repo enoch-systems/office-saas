@@ -57,86 +57,91 @@ function mapSupabaseStudent(student: SupabaseStudent, index: number): Student {
 }
 
 export async function fetchStudents(): Promise<Student[]> {
-  const { data, error } = await supabase
-    .from('students')
-    .select('*')
-    .order('name', { ascending: true });
+  try {
+    const { data, error } = await supabase
+      .from('students')
+      .select('*')
+      .order('name', { ascending: true });
 
-  if (error) {
+    if (error) {
+      console.error('Error fetching students:', error);
+      const errorMsg = (error as any)?.message || String(error);
+      throw new Error(`Failed to fetch students: ${errorMsg}`);
+    }
+
+    if (!data) {
+      return [];
+    }
+
+    return data.map(mapSupabaseStudent);
+  } catch (error) {
     console.error('Error fetching students:', error);
-    throw new Error(`Failed to fetch students: ${error.message}`);
+    throw new Error(`Failed to fetch students: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-
-  if (!data) {
-    return [];
-  }
-
-  return data.map(mapSupabaseStudent);
 }
 
 export async function searchStudents(searchTerm: string): Promise<Student[]> {
-  const { data, error } = await supabase
-    .from('students')
-    .select('*')
-    .order('name', { ascending: true });
+  try {
+    const result = await supabase
+      .from('students')
+      .select('*')
+      .order('name', { ascending: true })
+      .then((res: any) => res);
 
-  if (error) {
+    if (!result.data) {
+      return [];
+    }
+
+    const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+
+    return result.data
+      .map(mapSupabaseStudent)
+      .filter((student: Student) => {
+        return (
+          student.name.toLowerCase().includes(normalizedSearchTerm) ||
+          student.email.toLowerCase().includes(normalizedSearchTerm) ||
+          student.course.toLowerCase().includes(normalizedSearchTerm) ||
+          student.publicStudentId.toLowerCase().includes(normalizedSearchTerm)
+        );
+      });
+  } catch (error) {
     console.error('Error searching students:', error);
-    throw new Error(`Failed to search students: ${error.message}`);
+    throw new Error(`Failed to search students: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-
-  if (!data) {
-    return [];
-  }
-
-  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-
-  return data
-    .map(mapSupabaseStudent)
-    .filter((student) => {
-      return (
-        student.name.toLowerCase().includes(normalizedSearchTerm) ||
-        student.email.toLowerCase().includes(normalizedSearchTerm) ||
-        student.course.toLowerCase().includes(normalizedSearchTerm) ||
-        student.publicStudentId.toLowerCase().includes(normalizedSearchTerm)
-      );
-    });
 }
 
 export async function getStudentById(id: string): Promise<Student | null> {
   try {
-    const { data, error } = await supabase
+    const result = await supabase
       .from('students')
       .select('*')
       .eq('id', id)
       .single();
 
-    if (error) {
+    if (result.error) {
       // Handle different error scenarios
-      if (error.code === 'PGRST116') {
+      if (result.error.code === 'PGRST116') {
         // No rows returned
         return null;
       }
       
       // Create a more descriptive error message
-      const errorMessage = error.message || error.details || error.hint || 'Database query failed';
-      const errorCode = error.code || 'UNKNOWN';
+      const errorMessage = result.error.message || 'Database query failed';
+      const errorCode = result.error.code || 'UNKNOWN';
       
       console.error('Error fetching student:', {
         code: errorCode,
-        message: errorMessage,
-        details: error.details,
-        hint: error.hint
+        message: errorMessage
       });
       
       throw new Error(`Failed to fetch student (${errorCode}): ${errorMessage}`);
     }
 
-    if (!data) {
+    if (!result.data) {
       return null;
     }
 
-    return mapSupabaseStudent(data, 0);
+    return mapSupabaseStudent(result.data, 0);
   } catch (err) {
     console.error('Unexpected error in getStudentById:', err);
     
@@ -163,18 +168,23 @@ export async function updateStudentPaymentPlan(
   amountPaid: number,
   balanceRemaining: number
 ): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase as any)
-    .from('students')
-    .update({
-      payment_plan: paymentPlan,
-      amount_paid: amountPaid,
-      balance_remaining: balanceRemaining,
-    })
-    .eq('id', id);
+  try {
+    const result = await (supabase as any)
+      .from('students')
+      .update({
+        payment_plan: paymentPlan,
+        amount_paid: amountPaid,
+        balance_remaining: balanceRemaining,
+      })
+      .eq('id', id)
+      .then((res: any) => res);
 
-  if (error) {
+    if (result.error) {
+      console.error('Error updating student payment plan:', result.error);
+      throw new Error(`Failed to update payment plan: ${result.error.message}`);
+    }
+  } catch (error) {
     console.error('Error updating student payment plan:', error);
-    throw new Error(`Failed to update payment plan: ${error.message}`);
+    throw new Error(`Failed to update payment plan: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }

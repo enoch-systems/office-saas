@@ -1,9 +1,54 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Resend } from 'resend';
 import { emailTemplates, EmailData, getEmailSubject } from '@/lib/email-templates';
-import * as offlineDb from '@/lib/offline-db';
+import {
+  createEmailFollowup as createEmailFollowupDB,
+  getAllEmailFollowups
+} from '@/lib/local-database';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Offline Email Service - creates email records and provides export functionality
+class OfflineEmailService {
+  static async sendEmail(data: {
+    to: string;
+    subject: string;
+    html: string;
+    text: string;
+    studentId?: string;
+  }) {
+    console.log('Offline mode: Email created for:', data.to);
+    
+    // Create email followup record in local database
+    if (data.studentId) {
+      await createEmailFollowupDB({
+        student_id: data.studentId,
+        subject: data.subject,
+        message: data.html,
+        status: 'ready_to_send',
+        email_provider: 'offline',
+        sent_at: new Date().toISOString(),
+      });
+    }
+
+    return { 
+      data: { 
+        id: `offline-${Date.now()}`,
+        message: 'Email saved locally. Ready for export.'
+      }, 
+      error: null 
+    };
+  }
+
+  static async getEmailHistory(studentId?: string) {
+    const followups = await getAllEmailFollowups();
+    if (studentId) {
+      return followups.filter(f => f.student_id === studentId);
+    }
+    return followups;
+  }
+
+  static generateMailtoLink(email: string, subject: string, body: string) {
+    return `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }
+}
 
 function generateEmailHtml(emailType: string, data: EmailData): string {
   switch (emailType) {
@@ -37,8 +82,6 @@ function buildPlainTextEmail(subject: string, data: EmailData): string {
 }
 
 export async function POST(request: NextRequest) {
-  let followupId: string | null = null;
-
   try {
     const body = await request.json();
     const { to, emailType, data, studentId } = body;
@@ -60,65 +103,41 @@ export async function POST(request: NextRequest) {
     }
 
     const emailHtml = generateEmailHtml(emailType, data);
+    const plainText = buildPlainTextEmail(subject, data);
 
-    // Create email followup record in offline DB
-    if (studentId) {
-      const followup = await offlineDb.createEmailFollowup({
-        student_id: studentId,
-        subject,
-        message: emailHtml,
-        status: 'pending',
-        email_provider: 'resend',
-        sent_at: '',
-      });
-      followupId = followup.id;
-    }
-
-    const { data: emailData, error } = await resend.emails.send({
-      from: 'noreply@techtailblazeracademy.site',
-      to: [to],
-      subject: subject,
+    // Send email using offline service
+    const { data: emailData, error } = await OfflineEmailService.sendEmail({
+      to,
+      subject,
       html: emailHtml,
-      text: buildPlainTextEmail(subject, data),
+      text: plainText,
+      studentId,
     });
 
     if (error) {
-      console.error('Resend error:', error);
+      console.error('Email service error:', error);
       return NextResponse.json(
-        { error: error.message },
+        { error: 'Failed to create email' },
         { status: 400 }
       );
     }
 
-    if (followupId) {
-      await offlineDb.createEmailFollowup({
-        student_id: studentId || '',
-        subject,
-        message: emailHtml,
-        status: 'sent',
-        email_provider: 'resend',
-        sent_at: new Date().toISOString(),
-      });
-    }
+    // Generate mailto link for manual sending
+    const mailtoLink = OfflineEmailService.generateMailtoLink(to, subject, plainText);
 
     return NextResponse.json(
-      { success: true, data: emailData, followupId },
+      { 
+        success: true, 
+        data: emailData, 
+        mailtoLink,
+        message: 'Email saved locally. Use mailto link to send manually.'
+      },
       { status: 200 }
     );
   } catch (error) {
-    if (followupId) {
-      await offlineDb.createEmailFollowup({
-        student_id: '',
-        subject: '',
-        message: '',
-        status: 'failed',
-        email_provider: 'resend',
-        sent_at: '',
-      });
-    }
-
+    console.error('Email creation error:', error);
     return NextResponse.json(
-      { error: 'Failed to send email' },
+      { error: 'Failed to create email' },
       { status: 500 }
     );
   }

@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as offlineDb from '@/lib/offline-db';
+import {
+  getAllPaymentReceipts,
+  createPaymentReceipt as createPaymentReceiptDB,
+  updatePaymentReceipt as updatePaymentReceiptDB
+} from '@/lib/local-database';
 import { uploadImageBuffer } from '@/lib/local-storage';
 
 export async function POST(request: NextRequest) {
@@ -55,7 +59,7 @@ export async function POST(request: NextRequest) {
       submitted_at: new Date().toISOString(),
     };
 
-    const data = await offlineDb.createPaymentReceipt(paymentReceipt);
+    const data = await createPaymentReceiptDB(paymentReceipt);
 
     return NextResponse.json({
       success: true,
@@ -79,7 +83,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    const allReceipts = await offlineDb.getAllPaymentReceipts();
+    const allReceipts = await getAllPaymentReceipts();
     let filtered = allReceipts;
 
     if (status) {
@@ -88,7 +92,7 @@ export async function GET(request: NextRequest) {
 
     // Sort by submitted_at descending
     filtered.sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime());
-
+  
     // Apply pagination
     const data = filtered.slice(offset, offset + limit);
 
