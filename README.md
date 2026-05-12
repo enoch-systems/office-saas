@@ -1,6 +1,6 @@
-# Office SaaS - Offline Management System
+# Student Offline Database System
 
-A comprehensive offline office management dashboard for handling student registrations, payment verification, email communications, and administrative tasks. This system operates entirely offline with no external dependencies.
+A comprehensive offline student management database for handling student registrations, payment verification, email communications, and administrative tasks. This system operates entirely offline with no external dependencies, providing a complete student information management solution.
 
 ## Features
 
@@ -52,20 +52,53 @@ A comprehensive offline office management dashboard for handling student registr
 
 ## Tech Stack
 
-- **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS 4
-- **Database**: Local JSON file storage (offline)
-- **File Storage**: Local file system (offline)
-- **State Management**: React Context API
-- **Icons**: Lucide React
+### Frontend Framework
+- **Next.js 16.1.6** - React-based full-stack framework
+- **React 19.2.0** - UI library
+- **TypeScript 5.9.3** - Type-safe JavaScript
+
+### UI & Styling
+- **Tailwind CSS 4.1.17** - Utility-first CSS framework
+- **Tailwind Forms** - Form styling utilities
+- **Lucide React** - Icon library
+- **Swiper** - Carousel/slider component
+
+### Desktop Application
+- **Electron 42.0.1** - Cross-platform desktop app framework
+- **Electron Builder** - Packaging and distribution
+
+### Database
+- **Supabase** - PostgreSQL database with real-time features
+- **UUID extension** - For unique identifiers
+
+### Charts & Visualizations
+- **ApexCharts 4.7.0** - Chart library
+- **React ApexCharts** - React wrapper for ApexCharts
+- **React JVectorMap** - Interactive vector maps
+
+### Calendar & Date Handling
+- **FullCalendar** - Calendar component suite
+- **Flatpickr** - Date picker library
+
+### File Handling
+- **React DnD** - Drag and drop functionality
+- **React Dropzone** - File upload component
+
+### Email Services
+- **Resend** - Email delivery service
+
+### Development Tools
+- **ESLint** - Code linting
+- **Prettier** - Code formatting
+- **PostCSS** - CSS processing
+- **Concurrently** - Run multiple scripts simultaneously
 
 ## Installation
 
 1. **Clone repository**
    ```bash
    git clone https://github.com/enoch-systems/office-saas.git
-   cd office-saas
+   cd offline-saas
    ```
 
 2. **Install dependencies**
@@ -141,12 +174,12 @@ A comprehensive offline office management dashboard for handling student registr
 
 ## License
 
-This project is proprietary software for Office SaaS Management.
+This project is proprietary software for Student Database Management.
 
 ## Team
 
-- **Development**: Office SaaS Team
-- **Project**: Offline Management System
+- **Development**: Student Database Team
+- **Project**: Offline Student Management System
 
 ## Features Breakdown
 
@@ -184,14 +217,15 @@ All main pages (PaymentChecker, EmailPage, StudentDatabaseTable) include:
 ## Offline Architecture
 
 ### Database Storage
-- **JSON File Storage**: All data stored in local JSON files in `/data` directory
-- **Automatic Initialization**: Database files are created automatically on first run
-- **Data Persistence**: All changes are persisted to local files
+- **Supabase PostgreSQL**: All data stored in Supabase PostgreSQL database
+- **Real-time Features**: Live data synchronization
+- **UUID Extensions**: Unique identifier generation for records
+- **Offline Capable**: Electron app provides offline functionality
 
 ### File Storage
-- **Local Upload Directory**: Images and files stored in `/public/uploads`
+- **Supabase Storage**: Images and files stored in Supabase cloud storage
 - **Organized Structure**: Separate folders for different file types
-- **Direct Access**: Files served directly from local storage
+- **Direct Access**: Files served through Supabase CDN
 
 ### Authentication
 - **Local Session Management**: Sessions stored in browser localStorage
@@ -201,24 +235,25 @@ All main pages (PaymentChecker, EmailPage, StudentDatabaseTable) include:
 ## Data Structure
 
 ### Student Data
-Stored in `/data/students.json`:
+Stored in Supabase PostgreSQL database:
 - Personal information (name, email, phone, etc.)
 - Registration details
 - Payment information
 - Course and learning track data
+- UUID-based record identification
 
 ### Payment Receipts
-Stored in `/data/payment-receipts.json`:
+Stored in Supabase PostgreSQL database:
 - Payment submission details
-- Image file references
+- Image file references to Supabase Storage
 - Status tracking
 - Review information
 
 ### Email Follow-ups
-Stored in `/data/email-followups.json`:
+Stored in Supabase PostgreSQL database:
 - Email communication history
 - Template usage tracking
-- Delivery status
+- Delivery status via Resend API
 
 ## Support
 
